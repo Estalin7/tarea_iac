@@ -1,16 +1,16 @@
 resource "aws_s3_bucket" "buckets" {
-  bucket = "my-tf-test-bucket"
+  # Usamos variables para que el nombre sea único en todo el mundo
+  bucket        = "${var.project}-${var.environment}-${var.suffix}"
   force_destroy = true
        
   tags = {
-    Name        = "My bucket"
-    Environment = "Dev"
+    Name        = "${var.project}-main-storage"
+    Environment = var.environment
   }
 }
 
 resource "aws_s3_bucket_versioning" "buckets" {
-    bucket = aws_s3_bucket.buckets.id
-
+  bucket = aws_s3_bucket.buckets.id
   versioning_configuration {
     status = "Enabled"
   }
@@ -18,7 +18,6 @@ resource "aws_s3_bucket_versioning" "buckets" {
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
   bucket = aws_s3_bucket.buckets.id
-
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
@@ -28,7 +27,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets" {
 
 resource "aws_s3_bucket_public_access_block" "buckets" {
   bucket                  = aws_s3_bucket.buckets.id
-
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -41,9 +39,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "buckets" {
   rule {
     id     = "expire-uploads"
     status = "Enabled"
-
     filter { prefix = "uploads/" }
-
     expiration {
       days = var.uploads_expiration_days
     }
@@ -52,9 +48,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "buckets" {
   rule {
     id     = "expire-processed"
     status = "Enabled"
-
     filter { prefix = "processed/" }
-
     expiration {
       days = var.processed_expiration_days
     }
@@ -70,5 +64,6 @@ resource "aws_s3_bucket_notification" "uploads_to_sqs" {
     filter_prefix = "uploads/"
   }
 
+  # Importante: Esto asegura que SQS tenga permiso antes de que S3 intente avisarle
   depends_on = [aws_sqs_queue_policy.main]
 }

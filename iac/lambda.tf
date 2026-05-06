@@ -10,17 +10,6 @@ data "archive_file" "crop" {
   output_path = "../src/lambda/crop.zip"
 }
 
-
-resource "aws_cloudwatch_log_group" "upload" {
-  name              = "/aws/lambda/${local.name_prefix}-upload"
-  retention_in_days = var.log_retention_days
-}
-
-resource "aws_cloudwatch_log_group" "crop" {
-  name              = "/aws/lambda/${local.name_prefix}-crop"
-  retention_in_days = var.log_retention_days
-}
-
 resource "aws_lambda_function" "upload" {
   function_name    = "${local.name_prefix}-upload"
   description      = "Recibe imágenes y las guarda en S3 uploads/"
