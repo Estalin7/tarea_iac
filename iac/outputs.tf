@@ -5,7 +5,7 @@ output "api_url" {
 
 output "bucket_name" {
   description = "Nombre del bucket S3"
-  value       = aws_s3_bucket.images.id
+  value       = aws_s3_bucket.buckets.id
 }
 
 output "sqs_queue_url" {
