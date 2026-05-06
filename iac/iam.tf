@@ -32,7 +32,7 @@ resource "aws_iam_role_policy" "upload_s3" {
     Statement = [{
       Effect   = "Allow"
       Action   = ["s3:PutObject"]
-      Resource = "${aws_s3_bucket.images.arn}/uploads/*"
+      Resource = "${aws_s3_bucket.buckets.arn}/uploads/*"
     }]
   })
 }
@@ -63,12 +63,12 @@ resource "aws_iam_role_policy" "crop_s3_sqs" {
       {
         Effect   = "Allow"
         Action   = ["s3:GetObject"]
-        Resource = "${aws_s3_bucket.images.arn}/uploads/*"
+        Resource = "${aws_s3_bucket.buckets.arn}/uploads/*"
       },
       {
         Effect   = "Allow"
         Action   = ["s3:PutObject"]
-        Resource = "${aws_s3_bucket.images.arn}/processed/*"
+        Resource = "${aws_s3_bucket.buckets.arn}/processed/*"
       },
       {
         Effect = "Allow"

@@ -49,7 +49,7 @@ resource "aws_lambda_function" "upload" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.upload_basic_execution,
+    aws_iam_role_policy_attachment.upload_basic,
     aws_iam_role_policy_attachment.upload_vpc,
     aws_cloudwatch_log_group.upload
     ]
