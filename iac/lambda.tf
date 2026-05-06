@@ -35,20 +35,23 @@ resource "aws_lambda_function" "upload" {
 
   environment {
     variables = {
-      S3_BUCKET     = local.bucket_name
-      UPLOAD_PREFIX = "uploads"
+      S3_BUCKET     = aws_s3_bucket.buckets.bucket
+      UPLOAD_PREFIX = "uploads/"
     }
   }
 
   vpc_config {
-    subnet_ids         = aws_subnet.private[*].id
+    subnet_ids         = [
+        aws_subnet.private[0].id,
+        aws_subnet.private[1].id
+    ]
     security_group_ids = [aws_security_group.upload_lambda.id]
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.upload_attachments.aws_iam_role_policy_attachment.upload_basic_execution,
-    aws_iam_role_policy_attachment.upload_attachments.aws_iam_role_policy_attachment.upload_vpc_access,
-    aws_cloudwatch_log_group.upload_lambda
+    aws_iam_role_policy_attachment.upload_basic_execution,
+    aws_iam_role_policy_attachment.upload_vpc,
+    aws_cloudwatch_log_group.upload
     ]
 }
 
@@ -75,8 +78,8 @@ resource "aws_lambda_function" "crop" {
 
   vpc_config {
     subnet_ids         = [
-        aws_subnet.private_a.id,
-        aws_subnet.private_b.id
+        aws_subnet.private[0].id,
+        aws_subnet.private[1].id
         ]
     
     security_group_ids = [
@@ -84,7 +87,13 @@ resource "aws_lambda_function" "crop" {
         ]
   }
 
-  depends_on = [aws_cloudwatch_log_group.crop]
+  depends_on = [
+    aws_cloudwatch_log_group.crop,
+    aws_vpc_endpoint.s3,
+    aws_vpc_endpoint.sqs,
+    aws_vpc_endpoint.logs,
+    ]
+
 }
 
 
@@ -94,4 +103,6 @@ resource "aws_lambda_event_source_mapping" "sqs_to_crop" {
   batch_size                         = 5
   maximum_batching_window_in_seconds = 0
   function_response_types            = ["ReportBatchItemFailures"]
+
+  enabled = true
 }
