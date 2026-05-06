@@ -1,13 +1,13 @@
 data "archive_file" "upload" {
   type        = "zip"
-  source_dir  = ".../src/lambda/upload"
-  output_path = ".../src/lambda/upload.zip"
+  source_dir  = "../src/lambda/upload"
+  output_path = "../src/lambda/upload.zip"
 }
 
 data "archive_file" "crop" {
   type        = "zip"
-  source_dir  = ".../src/lambda/crop"
-  output_path = ".../src/lambda/crop.zip"
+  source_dir  = "../src/lambda/crop"
+  output_path = "../src/lambda/crop.zip"
 }
 
 
