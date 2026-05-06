@@ -1,0 +1,17 @@
+
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+
+# Lambda builds
+src/lambda/**/*.zip
+src/lambda/**/node_modules/
+
+
+# Archivos de sistema
+.DS_Store
+.vscode/
+*.swp

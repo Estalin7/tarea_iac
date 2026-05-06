@@ -4,13 +4,17 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = { Name = "${local.name_prefix}-vpc" }
+  tags = { 
+    Name = "${local.name_prefix}-vpc"
+     }
 }
 
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
-  tags = { Name = "${local.name_prefix}-igw" }
+  tags = { 
+    Name = "${local.name_prefix}-igw" 
+    }
 }
 
 
@@ -22,7 +26,9 @@ resource "aws_subnet" "public" {
 
   map_public_ip_on_launch = true
 
-  tags = { Name = "${local.name_prefix}-public-${local.azs[count.index]}" }
+  tags = {
+     Name = "${local.name_prefix}-public-${local.azs[count.index]}"
+      }
 }
 
 resource "aws_subnet" "private" {
@@ -31,14 +37,18 @@ resource "aws_subnet" "private" {
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = local.azs[count.index]
 
-  tags = { Name = "${local.name_prefix}-private-${local.azs[count.index]}" }
+  tags = {
+     Name = "${local.name_prefix}-private-${local.azs[count.index]}"
+      }
 }
 
 resource "aws_eip" "nat" {
   count  = var.single_nat_gateway ? 1 : 2
   domain = "vpc"
 
-  tags = { Name = "${local.name_prefix}-nat-eip-${count.index + 1}" }
+  tags = { 
+    Name = "${local.name_prefix}-nat-eip-${count.index + 1}"
+   }
 
   depends_on = [aws_internet_gateway.main]
 }
@@ -48,7 +58,9 @@ resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
 
-  tags = { Name = "${local.name_prefix}-nat-${count.index + 1}" }
+  tags = { 
+    Name = "${local.name_prefix}-nat-${count.index + 1}"
+     }
 
   depends_on = [aws_internet_gateway.main]
 }
@@ -62,7 +74,9 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.main.id
   }
 
-  tags = { Name = "${local.name_prefix}-rt-public" }
+  tags = { 
+    Name = "${local.name_prefix}-rt-public"
+     }
 }
 
 resource "aws_route_table_association" "public" {
@@ -81,7 +95,9 @@ resource "aws_route_table" "private" {
     nat_gateway_id = var.single_nat_gateway ? aws_nat_gateway.main[0].id : aws_nat_gateway.main[count.index].id
   }
 
-  tags = { Name = "${local.name_prefix}-rt-private-${count.index + 1}" }
+  tags = { 
+    Name = "${local.name_prefix}-rt-private-${count.index + 1}" 
+    }
 }
 
 resource "aws_route_table_association" "private" {
@@ -104,7 +120,9 @@ resource "aws_security_group" "upload_lambda" {
     description = "HTTPS salida"
   }
 
-  tags = { Name = "${local.name_prefix}-sg-upload" }
+  tags = {
+     Name = "${local.name_prefix}-sg-upload" 
+     }
 }
 
 resource "aws_security_group" "crop_lambda" {
@@ -120,7 +138,9 @@ resource "aws_security_group" "crop_lambda" {
     description = "HTTPS salida"
   }
 
-  tags = { Name = "${local.name_prefix}-sg-crop" }
+  tags = { 
+    Name = "${local.name_prefix}-sg-crop"
+     }
 }
 
 resource "aws_vpc_endpoint" "s3" {

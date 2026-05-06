@@ -62,7 +62,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "buckets" {
 }
 
 resource "aws_s3_bucket_notification" "uploads_to_sqs" {
-  bucket = aws_s3_bucket.images.id
+  bucket = aws_s3_bucket.buckets.id
 
   queue {
     queue_arn     = aws_sqs_queue.main.arn

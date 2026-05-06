@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "Región AWS"
   type        = string
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "environment" {
@@ -67,7 +67,7 @@ variable "crop_timeout" {
   default = 60
 }
 
-# SQS
+
 variable "sqs_visibility_timeout" {
   type    = number
   default = 360
@@ -83,7 +83,6 @@ variable "sqs_max_receive_count" {
   default = 3
 }
 
-# S3 lifecycle
 variable "uploads_expiration_days" {
   type    = number
   default = 30
@@ -94,7 +93,6 @@ variable "processed_expiration_days" {
   default = 90
 }
 
-# CloudWatch
 variable "log_retention_days" {
   type    = number
   default = 14
