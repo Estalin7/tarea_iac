@@ -69,5 +69,7 @@ exports.handler = async (event) => {
     }
   }
 
-  return { batchItemFailures: failures };
+  return { 
+    batchItemFailures: failures 
+    };
 };
