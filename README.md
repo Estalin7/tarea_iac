@@ -1,21 +1,22 @@
-AWS Serverless Image Processor (IaC con Terraform)
-Arquitectura serverless orientada a eventos diseñada para la carga y el procesamiento automatizado de imágenes. El sistema transforma imágenes cargadas en archivos PNG circulares de 40×40 px utilizando Node.js y la librería Sharp.
+#  AWS Serverless Image Processor (IaC con Terraform)
 
-🏗️ Arquitectura General
-El flujo de datos sigue el principio de mínimo privilegio y alta disponibilidad:
+Arquitectura **serverless** orientada a eventos diseñada para la carga y el procesamiento automatizado de imágenes. El sistema transforma imágenes cargadas en archivos **PNG circulares de 40×40 px** utilizando Node.js y la librería Sharp.
 
-Ingesta: Cliente → POST /upload a través de API Gateway HTTP API v2.
+##  Arquitectura General
 
-Carga: Lambda Upload procesa el binario y almacena la imagen original en S3 (uploads/).
+El flujo de datos sigue el principio de **mínimo privilegio** y **alta disponibilidad**:
 
-Evento: S3 dispara una notificación hacia una SQS Queue para desacoplar el procesamiento.
+* **Ingesta:** Cliente → `POST /upload` a través de **API Gateway HTTP API v2**.
+* **Carga:** **Lambda Upload** procesa el binario y almacena la imagen original en **S3** (`uploads/`).
+* **Evento:** S3 dispara una notificación hacia una **SQS Queue** para desacoplar el procesamiento.
+* **Procesamiento:** **Lambda Crop** (con Sharp) consume la cola, recorta la imagen a 40x40 circular y guarda el resultado en S3 (`processed/`).
+* **Resiliencia:** Si el procesamiento falla 3 veces, el mensaje se mueve a una **Dead Letter Queue (DLQ)**, disparando una **Alarma de CloudWatch**.
 
-Procesamiento: Lambda Crop (con Sharp) consume la cola, recorta la imagen a 40x40 circular y guarda el resultado en S3 (processed/).
+---
 
-Resiliencia: Si el procesamiento falla 3 veces, el mensaje se mueve a una Dead Letter Queue (DLQ), disparando una Alarma de CloudWatch.
+##  Estructura del Proyecto
 
-📂 Estructura del Proyecto
-Plaintext
+```text
 ├── iac/                     # Infraestructura como Código (Terraform)
 │   ├── environments/        # Configuraciones por entorno (dev, qa, prod)
 │   │   └── dev/
@@ -33,14 +34,16 @@ Plaintext
 └── src/lambda/              # Código fuente de las funciones (Node.js)
     ├── upload/              # Lógica de recepción de archivos
     └── crop/                # Lógica de procesamiento de imagen (Sharp)
-🛠️ Requisitos Previos
+ Requisitos Previos
 Asegúrate de tener configurado el entorno antes de iniciar:
 
-Bash
-# 1. Configurar AWS CLI (us-east-1 recomendado)
-aws configure 
+Configurar AWS CLI (us-east-1 recomendado):
 
-# 2. Verificar versiones de herramientas
+Bash
+aws configure
+Verificar versiones de herramientas:
+
+Bash
 terraform --version
 node --version # Requerido: v20.x
  Paso a Paso para el Despliegue
@@ -48,29 +51,17 @@ node --version # Requerido: v20.x
 Abre el archivo iac/environments/dev/terraform.tfvars y asigna un sufijo único:
 
 Terraform
-suffix = "123456"  # Usa un identificador único (ej: últimos 6 dígitos de tu cuenta AWS)
-2. Instalación de Dependencias
-Las funciones Lambda requieren paquetes de Node.js. La librería Sharp debe compilarse específicamente para el runtime de Lambda (Linux x64).
+suffix = "123456" # Usa los últimos 6 dígitos de tu cuenta AWS
 
-Bash
-# Instalar dependencias de Upload
-cd src/lambda/upload && npm install && cd ../../..
 
-# Instalar dependencias de Crop (Compilación para Linux)
-cd src/lambda/crop
-npm install --platform=linux --arch=x64 sharp
-cd ../../..
-3. Ejecución de Terraform (Entorno DEV)
+
+ Ejecución de Terraform (Entorno DEV)
 Bash
 cd iac
-
-# Inicializar y crear workspace
 terraform init
 terraform workspace new dev
-
-# Planificar y aplicar
-terraform apply -var-file="environments/dev/terraform.tfvars"
- Pruebas del Endpoint
+terraform apply 
+Pruebas del Endpoint
 Una vez desplegado, utiliza el output de la URL para probar la carga:
 
 Bash
@@ -78,8 +69,7 @@ Bash
 API_URL=$(terraform output -raw api_url)
 
 # Enviar imagen de prueba
-curl -X POST "${API_URL}/upload" \
-  -F "image=@/ruta/a/tu_foto.jpg"
+curl -X POST "${API_URL}/upload" -F "image=@/ruta/a/tu_foto.jpg"
 Respuesta Exitosa Esperada:
 
 JSON
@@ -89,8 +79,8 @@ JSON
   "key": "uploads/nombre_archivo.jpg",
   "size": 204800
 }
-📊 Monitoreo y Salidas
-Puedes consultar los datos clave de tu infraestructura en cualquier momento con los siguientes comandos:
+ Monitoreo y Salidas
+Puedes consultar los datos clave en cualquier momento:
 
 terraform output api_url: URL pública para carga de imágenes.
 
@@ -98,9 +88,12 @@ terraform output bucket_name: Identificador del bucket S3.
 
 terraform output sqs_queue_url: Endpoint de la cola de mensajes.
 
-🧹 Limpieza de Recursos
-Para evitar costos innecesarios, destruye la infraestructura cuando finalices:
+ Limpieza de Recursos
+Para evitar costos innecesarios:
 
 Bash
 terraform workspace select dev
-terraform destroy -var-file="environments/dev/terraform.tfvars"
+terraform destroy 
+
+---
+
